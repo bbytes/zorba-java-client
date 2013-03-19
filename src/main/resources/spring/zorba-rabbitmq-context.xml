@@ -12,7 +12,7 @@
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<value>	classpath:zorba-rabbitmq.properties</value>
+				<value>classpath:zorba-rabbitmq.properties</value>
 			</list>
 		</property>
 	</bean>
