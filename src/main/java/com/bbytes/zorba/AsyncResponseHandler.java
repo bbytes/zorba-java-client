@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
-package com.bbytes.zorba.jobworker.domain;
+package com.bbytes.zorba;
+
+import com.bbytes.zorba.domain.AsyncZorbaResponse;
 
 /**
- * An {@link Enum} for priority of the queues
  * 
- * @author Dhanush Gopinath
- * @since 0.0.1
+ *
+ * @author Thanneer
+ *
  * @version 0.0.1
- * 
  */
-public enum Priority {
+public interface AsyncResponseHandler {
 
-	CRITICAL(4), HIGH(3), MEDIUM(2), LOW(1);
-
-	int priority;
-
-	Priority(int priority) {
-		this.priority = priority;
-	}
-
-	public int getPriority() {
-		return priority;
-	}
+	public void onResponse(AsyncZorbaResponse asyncZorbaResponse);
+	
+	public void onThrowable(Throwable t);
 }

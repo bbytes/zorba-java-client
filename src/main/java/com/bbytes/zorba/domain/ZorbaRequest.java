@@ -1,28 +1,27 @@
 /**
  * 
  */
-package com.bbytes.zorba.jobworker.domain.impl;
+package com.bbytes.zorba.domain;
 
+import java.io.Serializable;
 import java.util.Map;
 
-import com.bbytes.zorba.jobworker.domain.Priority;
-import com.bbytes.zorba.jobworker.domain.ZorbaRequest;
-
 /**
- * Default implementation of {@link ZorbaRequest}
  * 
  * @author Dhanush Gopinath
  * 
  * 
  */
-public class ZorbaRequestImpl implements ZorbaRequest {
+public class ZorbaRequest implements Serializable{
 
-	private String id;
-	private String jobName;
-	private String queueName;
-	private Map<String, ?> data;
-	private Priority priority;
-	private String type;
+	private static final long serialVersionUID = -6789865933652864865L;
+
+	protected String id;
+	protected String jobName;
+	protected String queueName;
+	protected Map<String, ?> data;
+	protected Priority priority;
+	protected String type;
 
 	public String getId() {
 		return id;

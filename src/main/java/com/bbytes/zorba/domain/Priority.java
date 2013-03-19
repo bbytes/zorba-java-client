@@ -11,36 +11,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.bbytes.zorba.jobworker.domain.impl;
-
-import com.bbytes.zorba.jobworker.domain.ZorbaAsyncResponse;
+package com.bbytes.zorba.domain;
 
 /**
- * Implementation fo {@link ZorbaAsyncResponse}
+ * An {@link Enum} for priority of the queues
  * 
  * @author Dhanush Gopinath
+ * @since 0.0.1
+ * @version 0.0.1
  * 
- * @version
  */
-public class ZorbaAsyncResponseImpl extends ZorbaResponseImpl implements ZorbaAsyncResponse {
+public enum Priority {
 
-	private String correlationId;
-	private String replyQueue;
+	CRITICAL(4, "zorba.queue.pr.critical"), HIGH(3, "zorba.queue.pr.high"), MEDIUM(2, "zorba.queue.pr.medium"), LOW(1,
+			"zorba.queue.pr.low");
 
-	public String getCorrelationId() {
-		return correlationId;
+	int priority;
+	
+	String queueName;
+
+	Priority(int priority,String queueName) {
+		this.priority = priority;
+		this.queueName=queueName;
 	}
 
-	public void setCorrelationId(String correlationId) {
-		this.correlationId = correlationId;
+	public int getPriority() {
+		return priority;
 	}
-
-	public String getReplyQueue() {
-		return replyQueue;
+	
+	public String getQueueName() {
+		return queueName;
 	}
-
-	public void setReplyQueue(String replyQueue) {
-		this.replyQueue = replyQueue;
-	}
-
 }

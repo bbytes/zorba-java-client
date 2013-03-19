@@ -13,40 +13,51 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
-package com.bbytes.zorba.jobworker.domain;
+package com.bbytes.zorba.exception;
 
 /**
- * Interface extension of {@link ZorbaRequest} for sending asynchronous request. 
+ * 
  *
- * @author Dhanush Gopinath
+ * @author Thanneer
  *
  * @version 0.0.1
  */
-public interface ZorbaAsyncRequest extends ZorbaRequest {
+public class ClientException extends Exception {
+
+
+	private static final long serialVersionUID = 5106643112118235876L;
+	
+	/**
+	 * 
+	 */
+	public ClientException() {
+		// TODO Auto-generated constructor stub
+	}
 
 	/**
-	 * Sets the correlation id for the request
-	 * 
-	 * @param correlationId
+	 * @param message
 	 */
-	void setCorrelationId(String correlationId);
-	
+	public ClientException(String message) {
+		super(message);
+		// TODO Auto-generated constructor stub
+	}
+
 	/**
-	 * Returns the correlation id
-	 * 
-	 * @return
+	 * @param cause
 	 */
-	String getCorrelationId();
-	
+	public ClientException(Throwable cause) {
+		super(cause);
+		// TODO Auto-generated constructor stub
+	}
+
 	/**
-	 * Sets the reply queue
-	 * @param replyQueue
+	 * @param message
+	 * @param cause
 	 */
-	void setReplyQueue(String replyQueue);
-	
-	/**
-	 * Returns the reply queue
-	 * @return
-	 */
-	String getReplyQueue();
+	public ClientException(String message, Throwable cause) {
+		super(message, cause);
+		// TODO Auto-generated constructor stub
+	}
+
+
 }
