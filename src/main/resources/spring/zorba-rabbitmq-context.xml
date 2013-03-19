@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                        http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+                        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+                        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>	classpath:zorba-rabbitmq.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- Provides connection to the RabbitMQ broker -->
+
+	<bean id="rabbitConnectionFactory"
+		class="org.springframework.amqp.rabbit.connection.CachingConnectionFactory"
+		p:password="${rabbitmq.password}" p:port="${rabbitmq.port}"
+		p:username="${rabbitmq.username}">
+		<constructor-arg value="${rabbitmq.ipaddress}" />
+	</bean>
+
+	<rabbit:admin id="amqpAdmin" auto-startup="true"
+		connection-factory="rabbitConnectionFactory" />
+
+		<bean id="jsonMessageConverter"
+		class="org.springframework.amqp.support.converter.JsonMessageConverter" />
+
+	<!-- A template for sending messages and performing other commands to RabbitMQ -->
+
+	<bean id="rabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate"
+		p:connectionFactory-ref="rabbitConnectionFactory"
+		p:messageConverter-ref="jsonMessageConverter">
+	</bean>
+
+	<!-- <bean id="responseHandler" class="com.bbytes.webworker.impl.ResponseHandlerImpl" />
+
+	<bean id="errorHandler" class="com.bbytes.webworker.logging.LoggingErrorHandler" />
+
+	<bean id="producerService" class="com.bbytes.webworker.messaging.impl.ProducerServiceImpl">
+
+		<property name="defaultQueueName" value="${rabbitmq.work.queue}">
+		</property>
+
+		<property name="defaultReplyTo" value="${rabbitmq.work.reply.queue}">
+		</property>
+	</bean>
+
+	<listener-container concurrency="5"
+		connection-factory="rabbitConnectionFactory" error-handler="errorHandler"
+		message-converter="jsonMessageConverter" xmlns="http://www.springframework.org/schema/rabbit">
+
+		<listener method="handleWebWorkerResponse" queue-names="${rabbitmq.work.reply.queue}"
+			ref="responseHandler" />
+	</listener-container> -->
+
+</beans>
