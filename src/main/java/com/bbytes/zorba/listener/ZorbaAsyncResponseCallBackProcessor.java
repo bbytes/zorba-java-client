@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import com.bbytes.zorba.domain.AsyncZorbaResponse;
 import com.bbytes.zorba.handler.ZorbaAsyncResponseCallBackHandler;
+import com.bbytes.zorba.handler.impl.ZorbaSendAsyncThread;
 
 /**
  * 
@@ -31,22 +32,25 @@ import com.bbytes.zorba.handler.ZorbaAsyncResponseCallBackHandler;
 @Component
 public class ZorbaAsyncResponseCallBackProcessor {
 
-	private Map<String, ZorbaAsyncResponseCallBackHandler> mapCorrelationIdToCallBackHandler = new Hashtable<String, ZorbaAsyncResponseCallBackHandler>();
+	private Map<String, ZorbaSendAsyncThread> mapCorrelationIdToSendAysnThreadObject = new Hashtable<String, ZorbaSendAsyncThread>();
 
-	public void setCallBackHandler(String correlationId, ZorbaAsyncResponseCallBackHandler callBackHandler) {
-		mapCorrelationIdToCallBackHandler.put(correlationId, callBackHandler);
+	public void setCallBackHandler(String correlationId, ZorbaSendAsyncThread sendAsyncThread) {
+		mapCorrelationIdToSendAysnThreadObject.put(correlationId, sendAsyncThread);
 	}
 
-	public ZorbaAsyncResponseCallBackHandler getCallBackHandler(String correlationId) {
-		return mapCorrelationIdToCallBackHandler.get(correlationId);
+	public ZorbaSendAsyncThread getCallAsyncThreadExecutor(String correlationId) {
+		return mapCorrelationIdToSendAysnThreadObject.get(correlationId);
 	}
 
 	public void delegateCall(String correlationId, AsyncZorbaResponse response) {
-		ZorbaAsyncResponseCallBackHandler handler = getCallBackHandler(correlationId);
-		if (handler != null) {
-			handler.onResponse(response);
+		ZorbaSendAsyncThread sendAsyncThread = getCallAsyncThreadExecutor(correlationId);
+		if (sendAsyncThread != null) {
+			ZorbaAsyncResponseCallBackHandler responseCallBackHandler = sendAsyncThread
+					.getZorbaAsyncResponseCallBackHandler();
+			responseCallBackHandler.onResponse(response);
+			sendAsyncThread.releaseLatch();
+			mapCorrelationIdToSendAysnThreadObject.remove(correlationId);
 		}
 	}
-
 
 }

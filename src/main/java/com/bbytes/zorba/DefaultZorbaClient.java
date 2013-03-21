@@ -13,12 +13,8 @@
  */
 package com.bbytes.zorba;
 
-import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
-import org.springframework.amqp.AmqpException;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitOperations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -29,6 +25,7 @@ import com.bbytes.zorba.domain.Priority;
 import com.bbytes.zorba.domain.ZorbaRequest;
 import com.bbytes.zorba.exception.ZorbaClientException;
 import com.bbytes.zorba.handler.ZorbaAsyncResponseCallBackHandler;
+import com.bbytes.zorba.handler.impl.ZorbaSendAsyncThread;
 import com.bbytes.zorba.listener.ZorbaAsyncResponseCallBackProcessor;
 import com.bbytes.zorba.listener.ZorbaMessageListenerContainer;
 
@@ -95,25 +92,8 @@ public class DefaultZorbaClient implements ZorbaClient {
 	public void sendAsync(final AsyncZorbaRequest request, Priority priority,
 			ZorbaAsyncResponseCallBackHandler asyncResponseHandler) throws ZorbaClientException {
 		if (request != null) {
-			processRequestBeforeSend(request);
-			asyncResponseCallBackProcessor.setCallBackHandler(request.getCorrelationId(), asyncResponseHandler);
-			String queueName = priority.getQueueName();
-			rabbitOperations.convertAndSend(queueName, request, new MessagePostProcessor() {
-
-				@Override
-				public Message postProcessMessage(Message message) throws AmqpException {
-					message.getMessageProperties().setReplyTo(request.getReplyQueue());
-					try {
-						message.getMessageProperties().setCorrelationId(request.getCorrelationId().getBytes("UTF-8"));
-					} catch (UnsupportedEncodingException e) {
-						throw new AmqpException(e);
-					}
-					return message;
-				}
-			});
-
+			sendAsync(request, priority.getQueueName(), asyncResponseHandler);
 		}
-
 	}
 
 	/*
@@ -128,20 +108,10 @@ public class DefaultZorbaClient implements ZorbaClient {
 			ZorbaAsyncResponseCallBackHandler asyncResponseHandler) throws ZorbaClientException {
 		if (request != null && queueName != null) {
 			processRequestBeforeSend(request);
-			asyncResponseCallBackProcessor.setCallBackHandler(request.getCorrelationId(), asyncResponseHandler);
-			rabbitOperations.convertAndSend(queueName, request, new MessagePostProcessor() {
-
-				@Override
-				public Message postProcessMessage(Message message) throws AmqpException {
-					message.getMessageProperties().setReplyTo(request.getReplyQueue());
-					try {
-						message.getMessageProperties().setCorrelationId(request.getCorrelationId().getBytes("UTF-8"));
-					} catch (UnsupportedEncodingException e) {
-						throw new AmqpException(e);
-					}
-					return message;
-				}
-			});
+			ZorbaSendAsyncThread sendAsyncThread = new ZorbaSendAsyncThread(rabbitOperations, queueName, request,asyncResponseHandler);
+			asyncResponseCallBackProcessor.setCallBackHandler(request.getCorrelationId(), sendAsyncThread);
+			
+			sendAsyncThread.start();
 		}
 
 	}

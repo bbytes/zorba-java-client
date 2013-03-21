@@ -27,5 +27,7 @@ import com.bbytes.zorba.domain.AsyncZorbaResponse;
 public interface ZorbaAsyncResponseCallBackHandler {
 
 	public void onResponse(AsyncZorbaResponse asyncZorbaResponse);
+	
+	public void onRequestTimeoOut();
 
 }
