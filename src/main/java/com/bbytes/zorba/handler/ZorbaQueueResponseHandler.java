@@ -13,20 +13,31 @@
  * See the License for the specific language governing permissions and 
  * limitations under the License.
  */
-package com.bbytes.zorba;
+package com.bbytes.zorba.handler;
+
+import javax.mail.MessagingException;
+
+import org.springframework.amqp.core.MessageListener;
 
 import com.bbytes.zorba.domain.AsyncZorbaResponse;
 
 /**
- * 
+ * An interface that handles the response send to correct callback handler
+ * {@link ZorbaAsyncResponseCallBackHandler} after the job has ended its execution. 
  *
  * @author Thanneer
  *
- * @version 0.0.1
+ * @version 
  */
-public interface AsyncResponseHandler {
+public interface ZorbaQueueResponseHandler extends MessageListener{
 
-	public void onResponse(AsyncZorbaResponse asyncZorbaResponse);
-	
-	public void onThrowable(Throwable t);
+	/**
+	 * Handle the {@link WebWorkerResponse} and fire it to the listeners
+	 * registered.
+	 * 
+	 * @param response
+	 * @throws MessagingException
+	 */
+	public  void handleZorbaResponse(AsyncZorbaResponse response) throws Exception;
+
 }

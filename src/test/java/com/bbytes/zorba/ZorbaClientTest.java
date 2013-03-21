@@ -1,9 +1,6 @@
 package com.bbytes.zorba;
 
-import java.util.List;
-
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.bbytes.zorba.domain.AsyncZorbaRequest;
+import com.bbytes.zorba.domain.AsyncZorbaResponse;
 import com.bbytes.zorba.domain.Priority;
-import com.bbytes.zorba.domain.ZorbaRequest;
-import com.bbytes.zorba.exception.ClientException;
+import com.bbytes.zorba.exception.ZorbaClientException;
+import com.bbytes.zorba.handler.ZorbaAsyncResponseCallBackHandler;
 
 /**
  * Test class for {@link RabbitMQSender}
@@ -37,11 +36,17 @@ public class ZorbaClientTest {
 	}
 
 	@Test
-	public void testClient() throws ClientException {
-		ZorbaRequest zorbaRequest = new ZorbaRequest();
-		zorbaRequest.setId("testid");
-		zorbaClient.send(zorbaRequest, Priority.HIGH);
-	}
+	public void testClient() throws ZorbaClientException, InterruptedException {
+		AsyncZorbaRequest zorbaRequest = new AsyncZorbaRequest();
+		zorbaRequest.setId("222222222222222");
+		zorbaClient.sendAsync(zorbaRequest, Priority.HIGH, new ZorbaAsyncResponseCallBackHandler() {
 
+			@Override
+			public void onResponse(AsyncZorbaResponse asyncZorbaResponse) {
+				System.out.println(asyncZorbaResponse.getCorrelationId());
+
+			}
+		});
+	}
 
 }

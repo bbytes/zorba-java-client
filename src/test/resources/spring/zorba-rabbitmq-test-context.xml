@@ -26,7 +26,7 @@
 		p:username="${rabbitmq.username}">
 		<constructor-arg value="${rabbitmq.ipaddress}" />
 	</bean>
-	
+
 	<!-- Request Queues -->
 	<rabbit:queue id="pq.critical" name="${priority.queue.critical}" />
 	<rabbit:queue id="pq.high" name="${priority.queue.high}" />
@@ -51,14 +51,9 @@
 		p:messageConverter-ref="jsonMessageConverter">
 	</bean>
 
-	<!-- <bean id="responseHandler" class="com.bbytes.webworker.impl.ResponseHandlerImpl" 
-		/> <bean id="errorHandler" class="com.bbytes.webworker.logging.LoggingErrorHandler" 
-		/> <bean id="producerService" class="com.bbytes.webworker.messaging.impl.ProducerServiceImpl"> 
-		<property name="defaultQueueName" value="${rabbitmq.work.queue}"> </property> 
-		<property name="defaultReplyTo" value="${rabbitmq.work.reply.queue}"> </property> 
-		</bean> <listener-container concurrency="5" connection-factory="rabbitConnectionFactory" 
-		error-handler="errorHandler" message-converter="jsonMessageConverter" xmlns="http://www.springframework.org/schema/rabbit"> 
-		<listener method="handleWebWorkerResponse" queue-names="${rabbitmq.work.reply.queue}" 
-		ref="responseHandler" /> </listener-container> -->
+	<bean id="replyQueueListenerService" class="com.bbytes.zorba.listener.ZorbaQueueListenerService" />
+
+	<bean id="simpleMsgContainerListener" class="com.bbytes.zorba.listener.ZorbaMessageListenerContainer"
+		p:concurrentConsumers="5" p:connectionFactory-ref="rabbitConnectionFactory" />
 
 </beans>

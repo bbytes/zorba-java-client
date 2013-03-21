@@ -29,7 +29,7 @@
 	<rabbit:admin id="amqpAdmin" auto-startup="true"
 		connection-factory="rabbitConnectionFactory" />
 
-		<bean id="jsonMessageConverter"
+	<bean id="jsonMessageConverter"
 		class="org.springframework.amqp.support.converter.JsonMessageConverter" />
 
 	<!-- A template for sending messages and performing other commands to RabbitMQ -->
@@ -39,25 +39,9 @@
 		p:messageConverter-ref="jsonMessageConverter">
 	</bean>
 
-	<!-- <bean id="responseHandler" class="com.bbytes.webworker.impl.ResponseHandlerImpl" />
+	<bean id="replyQueueListenerService" class="com.bbytes.zorba.listener.ZorbaQueueListenerService" />
 
-	<bean id="errorHandler" class="com.bbytes.webworker.logging.LoggingErrorHandler" />
-
-	<bean id="producerService" class="com.bbytes.webworker.messaging.impl.ProducerServiceImpl">
-
-		<property name="defaultQueueName" value="${rabbitmq.work.queue}">
-		</property>
-
-		<property name="defaultReplyTo" value="${rabbitmq.work.reply.queue}">
-		</property>
-	</bean>
-
-	<listener-container concurrency="5"
-		connection-factory="rabbitConnectionFactory" error-handler="errorHandler"
-		message-converter="jsonMessageConverter" xmlns="http://www.springframework.org/schema/rabbit">
-
-		<listener method="handleWebWorkerResponse" queue-names="${rabbitmq.work.reply.queue}"
-			ref="responseHandler" />
-	</listener-container> -->
+	<bean id="simpleMsgContainerListener" class="com.bbytes.zorba.listener.ZorbaMessageListenerContainer"
+		p:concurrentConsumers="5" p:connectionFactory-ref="rabbitConnectionFactory" />
 
 </beans>

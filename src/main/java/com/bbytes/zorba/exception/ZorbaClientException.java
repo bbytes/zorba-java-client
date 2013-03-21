@@ -22,7 +22,7 @@ package com.bbytes.zorba.exception;
  *
  * @version 0.0.1
  */
-public class ClientException extends Exception {
+public class ZorbaClientException extends Exception {
 
 
 	private static final long serialVersionUID = 5106643112118235876L;
@@ -30,14 +30,14 @@ public class ClientException extends Exception {
 	/**
 	 * 
 	 */
-	public ClientException() {
+	public ZorbaClientException() {
 		// TODO Auto-generated constructor stub
 	}
 
 	/**
 	 * @param message
 	 */
-	public ClientException(String message) {
+	public ZorbaClientException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
@@ -45,7 +45,7 @@ public class ClientException extends Exception {
 	/**
 	 * @param cause
 	 */
-	public ClientException(Throwable cause) {
+	public ZorbaClientException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}
@@ -54,7 +54,7 @@ public class ClientException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public ClientException(String message, Throwable cause) {
+	public ZorbaClientException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}

@@ -16,7 +16,8 @@ package com.bbytes.zorba;
 import com.bbytes.zorba.domain.AsyncZorbaRequest;
 import com.bbytes.zorba.domain.Priority;
 import com.bbytes.zorba.domain.ZorbaRequest;
-import com.bbytes.zorba.exception.ClientException;
+import com.bbytes.zorba.exception.ZorbaClientException;
+import com.bbytes.zorba.handler.ZorbaAsyncResponseCallBackHandler;
 
 /**
  * The zorba client interface that can send zorba request to job server
@@ -31,35 +32,35 @@ public interface ZorbaClient {
 	 * Sends the request to the Queue based on the priority
 	 * 
 	 * @param request
-	 * @throws ClientException
+	 * @throws ZorbaClientException
 	 */
-	void send(final ZorbaRequest request, Priority priority) throws ClientException;
+	void send(final ZorbaRequest request, Priority priority) throws ZorbaClientException;
 
 	/**
 	 * Sends the request to the specified Queue
 	 * 
 	 * @param request
-	 * @throws ClientException
+	 * @throws ZorbaClientException
 	 */
-	void send(final ZorbaRequest request, String queueName) throws ClientException;
+	void send(final ZorbaRequest request, String queueName) throws ZorbaClientException;
 
 	/**
 	 * Sends async request to the Queue based on the priority
 	 * 
 	 * @param request
-	 * @throws ClientException
+	 * @throws ZorbaClientException
 	 */
-	void sendAsync(final AsyncZorbaRequest request, Priority priority, AsyncResponseHandler asyncResponseHandler)
-			throws ClientException;
+	void sendAsync(final AsyncZorbaRequest request, Priority priority, ZorbaAsyncResponseCallBackHandler asyncResponseHandler)
+			throws ZorbaClientException;
 
 	/**
 	 * Sends async request to the specified Queue
 	 * 
 	 * @param request
-	 * @throws ClientException
+	 * @throws ZorbaClientException
 	 */
-	void sendAsync(final AsyncZorbaRequest request, String queueName, AsyncResponseHandler asyncResponseHandler)
-			throws ClientException;
+	void sendAsync(final AsyncZorbaRequest request, String queueName, ZorbaAsyncResponseCallBackHandler asyncResponseHandler)
+			throws ZorbaClientException;
 
 
 }
