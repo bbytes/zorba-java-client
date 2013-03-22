@@ -52,7 +52,7 @@ public class ZorbaMessageListenerContainer extends SimpleMessageListenerContaine
 		return clientUniqueReplyQueueName;
 	}
 
-	public boolean deleteClientReplyQueue() {
+	protected boolean deleteClientReplyQueue() {
 		return rabbitAdmin.deleteQueue(clientUniqueReplyQueueName);
 	}
 

@@ -12,8 +12,8 @@
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<value> classpath*:zorba-testing.properties</value>
-				<value> classpath:zorba-rabbitmq.properties</value>
+				<value>classpath*:zorba-testing.properties</value>
+				<value>classpath:zorba-rabbitmq.properties</value>
 			</list>
 		</property>
 	</bean>
@@ -54,6 +54,6 @@
 	<bean id="replyQueueListenerService" class="com.bbytes.zorba.listener.ZorbaQueueListenerService" />
 
 	<bean id="simpleMsgContainerListener" class="com.bbytes.zorba.listener.ZorbaMessageListenerContainer"
-		p:concurrentConsumers="5" p:connectionFactory-ref="rabbitConnectionFactory" />
+		p:concurrentConsumers="10" p:connectionFactory-ref="rabbitConnectionFactory" />
 
 </beans>

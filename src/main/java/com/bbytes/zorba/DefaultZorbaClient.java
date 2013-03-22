@@ -14,10 +14,13 @@
 package com.bbytes.zorba;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.springframework.amqp.rabbit.core.RabbitOperations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import com.bbytes.zorba.domain.AsyncZorbaRequest;
@@ -25,7 +28,7 @@ import com.bbytes.zorba.domain.Priority;
 import com.bbytes.zorba.domain.ZorbaRequest;
 import com.bbytes.zorba.exception.ZorbaClientException;
 import com.bbytes.zorba.handler.ZorbaAsyncResponseCallBackHandler;
-import com.bbytes.zorba.handler.impl.ZorbaSendAsyncThread;
+import com.bbytes.zorba.handler.impl.ZorbaSendAsyncCallable;
 import com.bbytes.zorba.listener.ZorbaAsyncResponseCallBackProcessor;
 import com.bbytes.zorba.listener.ZorbaMessageListenerContainer;
 
@@ -48,6 +51,8 @@ public class DefaultZorbaClient implements ZorbaClient {
 	@Autowired
 	private ZorbaAsyncResponseCallBackProcessor asyncResponseCallBackProcessor;
 
+	private ExecutorService executor = Executors.newCachedThreadPool();
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -55,7 +60,6 @@ public class DefaultZorbaClient implements ZorbaClient {
 	 * com.bbytes.zorba.domain.Priority)
 	 */
 	@Override
-	@Async
 	public void send(ZorbaRequest request, Priority priority) throws ZorbaClientException {
 		if (request != null && priority != null) {
 			processRequestBeforeSend(request);
@@ -72,7 +76,6 @@ public class DefaultZorbaClient implements ZorbaClient {
 	 * java.lang.String)
 	 */
 	@Override
-	@Async
 	public void send(ZorbaRequest request, String queueName) throws ZorbaClientException {
 		if (request != null && queueName != null) {
 			processRequestBeforeSend(request);
@@ -88,12 +91,14 @@ public class DefaultZorbaClient implements ZorbaClient {
 	 * com.bbytes.zorba.domain.Priority, com.bbytes.zorba.AsyncResponseHandler)
 	 */
 	@Override
-	@Async
-	public void sendAsync(final AsyncZorbaRequest request, Priority priority,
+	public Future<Boolean> sendAsync(final AsyncZorbaRequest request, Priority priority,
 			ZorbaAsyncResponseCallBackHandler asyncResponseHandler) throws ZorbaClientException {
-		if (request != null) {
-			sendAsync(request, priority.getQueueName(), asyncResponseHandler);
+		if (request == null) {
+			new AsyncResult<Boolean>(false);
 		}
+
+		return sendAsync(request, priority.getQueueName(), asyncResponseHandler);
+
 	}
 
 	/*
@@ -103,16 +108,23 @@ public class DefaultZorbaClient implements ZorbaClient {
 	 * java.lang.String, com.bbytes.zorba.AsyncResponseHandler)
 	 */
 	@Override
-	@Async
-	public void sendAsync(final AsyncZorbaRequest request, String queueName,
+	public Future<Boolean> sendAsync(final AsyncZorbaRequest request, String queueName,
 			ZorbaAsyncResponseCallBackHandler asyncResponseHandler) throws ZorbaClientException {
+		Future<Boolean> responseRecieved = new AsyncResult<Boolean>(false);
 		if (request != null && queueName != null) {
-			processRequestBeforeSend(request);
-			ZorbaSendAsyncThread sendAsyncThread = new ZorbaSendAsyncThread(rabbitOperations, queueName, request,asyncResponseHandler);
-			asyncResponseCallBackProcessor.setCallBackHandler(request.getCorrelationId(), sendAsyncThread);
-			
-			sendAsyncThread.start();
+			try {
+				processRequestBeforeSend(request);
+				ZorbaSendAsyncCallable sendAsyncCallable = new ZorbaSendAsyncCallable(rabbitOperations, queueName,
+						request, asyncResponseHandler);
+
+				asyncResponseCallBackProcessor.setCallBackHandler(request.getCorrelationId(), sendAsyncCallable);
+				responseRecieved = executor.submit(sendAsyncCallable);
+			} catch (Exception e) {
+				throw new ZorbaClientException(e);
+			}
 		}
+
+		return responseRecieved;
 
 	}
 
@@ -123,9 +135,12 @@ public class DefaultZorbaClient implements ZorbaClient {
 			((AsyncZorbaRequest) zorbaRequest).setCorrelationId(uniqueRequestId);
 			((AsyncZorbaRequest) zorbaRequest).setReplyQueue(zorbaMessageListenerContainer
 					.getClientUniqueReplyQueueName());
-
 		}
+	}
 
+	public void shutdown() {
+		zorbaMessageListenerContainer.shutdown();
+		executor.shutdown();
 	}
 
 }

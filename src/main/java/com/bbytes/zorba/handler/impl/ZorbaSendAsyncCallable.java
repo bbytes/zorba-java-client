@@ -14,6 +14,7 @@
 package com.bbytes.zorba.handler.impl;
 
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -26,14 +27,17 @@ import com.bbytes.zorba.domain.AsyncZorbaRequest;
 import com.bbytes.zorba.handler.ZorbaAsyncResponseCallBackHandler;
 
 /**
- * 
+ * The request is send by client to job server using this {@link Callable} class , the thread waits
+ * till the response is sent or till the time out mentioned in the request. The wait and notify is
+ * done using {@link CountDownLatch}
  * 
  * @author Thanneer
  * 
- * @version
+ * @version 0.0.1
  */
-public class ZorbaSendAsyncThread extends Thread {
+public class ZorbaSendAsyncCallable implements Callable<Boolean> {
 
+	/** Countdown latch */
 	private final CountDownLatch latch = new CountDownLatch(1);
 
 	private RabbitOperations rabbitOperations;
@@ -44,7 +48,7 @@ public class ZorbaSendAsyncThread extends Thread {
 
 	private ZorbaAsyncResponseCallBackHandler zorbaAsyncResponseCallBackHandler;
 
-	public ZorbaSendAsyncThread(RabbitOperations rabbitOperations, String queueName, AsyncZorbaRequest request,
+	public ZorbaSendAsyncCallable(RabbitOperations rabbitOperations, String queueName, AsyncZorbaRequest request,
 			ZorbaAsyncResponseCallBackHandler zorbaAsyncResponseCallBackHandler) {
 		this.rabbitOperations = rabbitOperations;
 		this.queueName = queueName;
@@ -52,7 +56,13 @@ public class ZorbaSendAsyncThread extends Thread {
 		this.zorbaAsyncResponseCallBackHandler = zorbaAsyncResponseCallBackHandler;
 	}
 
-	public void run() {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.concurrent.Callable#call()
+	 */
+	@Override
+	public Boolean call() throws Exception {
 		rabbitOperations.convertAndSend(queueName, request, new MessagePostProcessor() {
 
 			@Override
@@ -68,15 +78,23 @@ public class ZorbaSendAsyncThread extends Thread {
 		});
 
 		try {
-			latch.await(request.getTimeOut(), TimeUnit.SECONDS);
-			if (latch.getCount() != 0) {
+
+			long timeOut = Long.MAX_VALUE;
+			if (request.getTimeOut() != -1) {
+				timeOut = request.getTimeOut();
+			}
+
+			if (!latch.await(timeOut, TimeUnit.SECONDS)) {
+				// if the code is reached here then the request is timed out so call the
+				// onRequestTimeoOut on call back method
 				zorbaAsyncResponseCallBackHandler.onRequestTimeoOut();
-				latch.countDown();
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			return false;
 		}
 
+		return true;
 	}
 
 	public void releaseLatch() {
@@ -89,4 +107,5 @@ public class ZorbaSendAsyncThread extends Thread {
 	public ZorbaAsyncResponseCallBackHandler getZorbaAsyncResponseCallBackHandler() {
 		return zorbaAsyncResponseCallBackHandler;
 	}
+
 }

@@ -20,10 +20,11 @@ import org.springframework.stereotype.Component;
 
 import com.bbytes.zorba.domain.AsyncZorbaResponse;
 import com.bbytes.zorba.handler.ZorbaAsyncResponseCallBackHandler;
-import com.bbytes.zorba.handler.impl.ZorbaSendAsyncThread;
+import com.bbytes.zorba.handler.impl.ZorbaSendAsyncCallable;
 
 /**
- * 
+ * This class holds the map of correlation id to callback class {@link ZorbaAsyncResponseCallBackHandler} instance via {@link ZorbaSendAsyncCallable}
+ * Once the response is received the correct call back method is given the response. 
  * 
  * @author Thanneer
  * 
@@ -32,22 +33,24 @@ import com.bbytes.zorba.handler.impl.ZorbaSendAsyncThread;
 @Component
 public class ZorbaAsyncResponseCallBackProcessor {
 
-	private Map<String, ZorbaSendAsyncThread> mapCorrelationIdToSendAysnThreadObject = new Hashtable<String, ZorbaSendAsyncThread>();
+	private Map<String, ZorbaSendAsyncCallable> mapCorrelationIdToSendAysnThreadObject = new Hashtable<String, ZorbaSendAsyncCallable>();
 
-	public void setCallBackHandler(String correlationId, ZorbaSendAsyncThread sendAsyncThread) {
+	public void setCallBackHandler(String correlationId, ZorbaSendAsyncCallable sendAsyncThread) {
 		mapCorrelationIdToSendAysnThreadObject.put(correlationId, sendAsyncThread);
 	}
 
-	public ZorbaSendAsyncThread getCallAsyncThreadExecutor(String correlationId) {
+	public ZorbaSendAsyncCallable getCallAsyncThreadExecutor(String correlationId) {
 		return mapCorrelationIdToSendAysnThreadObject.get(correlationId);
 	}
 
 	public void delegateCall(String correlationId, AsyncZorbaResponse response) {
-		ZorbaSendAsyncThread sendAsyncThread = getCallAsyncThreadExecutor(correlationId);
+		ZorbaSendAsyncCallable sendAsyncThread = getCallAsyncThreadExecutor(correlationId);
 		if (sendAsyncThread != null) {
 			ZorbaAsyncResponseCallBackHandler responseCallBackHandler = sendAsyncThread
 					.getZorbaAsyncResponseCallBackHandler();
+			// calling onResponse method in callback
 			responseCallBackHandler.onResponse(response);
+			// release latch is called to release the thread from wait using countDownLatch mechanism
 			sendAsyncThread.releaseLatch();
 			mapCorrelationIdToSendAysnThreadObject.remove(correlationId);
 		}

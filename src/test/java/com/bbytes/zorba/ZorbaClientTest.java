@@ -1,11 +1,12 @@
 package com.bbytes.zorba;
 
+import java.util.concurrent.Future;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -53,37 +54,67 @@ public class ZorbaClientTest {
 			@Override
 			public void onRequestTimeoOut() {
 				System.out.println("Request timed out");
-				
+
 			}
 		});
-	
+
 	}
 
-	
 	public static void main(String[] args) {
-		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath*:/spring/zorba-client-test-context.xml");
+		ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
+				"classpath*:/spring/zorba-client-test-context.xml");
 		ZorbaClient zorbaClient = applicationContext.getBean(ZorbaClient.class);
 		AsyncZorbaRequest zorbaRequest = new AsyncZorbaRequest();
-		zorbaRequest.setId("222222222222222");
-		zorbaRequest.setTimeOut(15);
+		zorbaRequest.setId("111111111");
+		zorbaRequest.setTimeOut(5);
+		Future<Boolean> responseRecieved1 = null;
+		Future<Boolean> responseRecieved2 = null;
 		try {
-			zorbaClient.sendAsync(zorbaRequest, Priority.HIGH, new ZorbaAsyncResponseCallBackHandler() {
+			responseRecieved1 = zorbaClient.sendAsync(zorbaRequest, Priority.HIGH,
+					new ZorbaAsyncResponseCallBackHandler() {
 
-				@Override
-				public void onResponse(AsyncZorbaResponse asyncZorbaResponse) {
-					System.out.println(asyncZorbaResponse.getCorrelationId());
+						@Override
+						public void onResponse(AsyncZorbaResponse asyncZorbaResponse) {
+							System.out.println(asyncZorbaResponse.getCorrelationId());
+						}
 
-				}
+						@Override
+						public void onRequestTimeoOut() {
+							System.out.println("Request timed out 1");
 
-				@Override
-				public void onRequestTimeoOut() {
-					System.out.println("Request timed out");
-					
-				}
-			});
-		} catch (ZorbaClientException e) {
-			// TODO Auto-generated catch block
+						}
+					});
+			
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		AsyncZorbaRequest zorbaRequest2 = new AsyncZorbaRequest();
+		zorbaRequest2.setId("222222222222222");
+		zorbaRequest2.setTimeOut(1);
+		try {
+			responseRecieved2 = zorbaClient.sendAsync(zorbaRequest2, Priority.HIGH,
+					new ZorbaAsyncResponseCallBackHandler() {
+
+						@Override
+						public void onResponse(AsyncZorbaResponse asyncZorbaResponse) {
+							System.out.println(asyncZorbaResponse.getCorrelationId());
+						}
+
+						@Override
+						public void onRequestTimeoOut() {
+							System.out.println("Request timed out 2");
+
+						}
+					});
+			Boolean done1 = responseRecieved1.get();
+			Boolean done2 = responseRecieved2.get();
+			zorbaClient.shutdown();
+			System.exit(1);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		
 	}
 }

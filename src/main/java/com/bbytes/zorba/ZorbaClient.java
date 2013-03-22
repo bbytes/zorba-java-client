@@ -13,6 +13,8 @@
  */
 package com.bbytes.zorba;
 
+import java.util.concurrent.Future;
+
 import com.bbytes.zorba.domain.AsyncZorbaRequest;
 import com.bbytes.zorba.domain.Priority;
 import com.bbytes.zorba.domain.ZorbaRequest;
@@ -45,22 +47,34 @@ public interface ZorbaClient {
 	void send(final ZorbaRequest request, String queueName) throws ZorbaClientException;
 
 	/**
-	 * Sends async request to the Queue based on the priority
+	 * Sends async request to the Queue based on the priority and it returns a {@link Future}
+	 * boolean that say if the response is come back
 	 * 
 	 * @param request
+	 * @param priority
+	 * @param asyncResponseHandler
+	 * @return
 	 * @throws ZorbaClientException
 	 */
-	void sendAsync(final AsyncZorbaRequest request, Priority priority, ZorbaAsyncResponseCallBackHandler asyncResponseHandler)
-			throws ZorbaClientException;
+	Future<Boolean> sendAsync(final AsyncZorbaRequest request, Priority priority,
+			ZorbaAsyncResponseCallBackHandler asyncResponseHandler) throws ZorbaClientException;
 
 	/**
-	 * Sends async request to the specified Queue
+	 * Sends async request to specified Queue and it returns a {@link Future} boolean that say if
+	 * the response is come back
 	 * 
 	 * @param request
+	 * @param queueName
+	 * @param asyncResponseHandler
+	 * @return
 	 * @throws ZorbaClientException
 	 */
-	void sendAsync(final AsyncZorbaRequest request, String queueName, ZorbaAsyncResponseCallBackHandler asyncResponseHandler)
-			throws ZorbaClientException;
+	Future<Boolean> sendAsync(final AsyncZorbaRequest request, String queueName,
+			ZorbaAsyncResponseCallBackHandler asyncResponseHandler) throws ZorbaClientException;
 
+	/**
+	 * Shut down the client , it cleans up all the resource held by client
+	 */
+	void shutdown();
 
 }
