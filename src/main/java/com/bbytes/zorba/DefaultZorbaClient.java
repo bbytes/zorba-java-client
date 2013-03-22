@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.springframework.amqp.rabbit.core.RabbitOperations;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ import com.bbytes.zorba.listener.ZorbaMessageListenerContainer;
  * @version
  */
 @Component
-public class DefaultZorbaClient implements ZorbaClient {
+public class DefaultZorbaClient implements ZorbaClient,DisposableBean  {
 
 	@Autowired
 	private RabbitOperations rabbitOperations;
@@ -141,6 +142,16 @@ public class DefaultZorbaClient implements ZorbaClient {
 	public void shutdown() {
 		zorbaMessageListenerContainer.shutdown();
 		executor.shutdown();
+		zorbaMessageListenerContainer.destroy();
+	}
+
+	/**
+	 * Calls {@link #shutdown()} when the BeanFactory destroys the container instance.
+	 * 
+	 * @see #shutdown()
+	 */
+	public void destroy() {
+		shutdown();
 	}
 
 }
